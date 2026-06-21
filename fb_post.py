@@ -51,7 +51,7 @@ def post_to_facebook(message: str, photo_path: Path) -> dict:
         files = {
             "source": (photo_path.name, photo, content_type)
         }
-        response = requests.post(url, data=data, files=files, timeout=60)
+        response = requests.post(url, data=data, files=files, timeout=300)
 
     try:
         return response.json()
