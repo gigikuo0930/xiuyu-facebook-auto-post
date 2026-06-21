@@ -1,5 +1,8 @@
 import random
+import time
+
 from google import genai
+from google.genai import errors
 from config import GEMINI_API_KEY
 
 client = genai.Client(api_key=GEMINI_API_KEY)
@@ -15,7 +18,7 @@ TOPICS = [
     "天然玉石每件紋理不同的特色",
 ]
 
-def generate_article() -> str:
+def generate_article(max_attempts: int = 3) -> str:
     topic = random.choice(TOPICS)
 
     prompt = f"""
@@ -33,8 +36,22 @@ def generate_article() -> str:
 7. 直接輸出貼文內容，不要加標題說明
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-    )
-    return response.text.strip()
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+            )
+            return response.text.strip()
+        except errors.ServerError:
+            if attempt == max_attempts:
+                raise
+
+            wait_seconds = 30 * attempt
+            print(
+                f"Gemini 服務暫時忙碌，{wait_seconds} 秒後自動重試 "
+                f"({attempt}/{max_attempts})..."
+            )
+            time.sleep(wait_seconds)
+
+    raise RuntimeError("Gemini 未能產生貼文")
