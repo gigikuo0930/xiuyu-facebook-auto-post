@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fb_post import post_to_facebook
+from fb_post import has_posted_today, post_to_facebook
 from gemini_post import generate_article
 
 PHOTO_DIR = Path(__file__).resolve().parent / "岫玉照片"
@@ -25,6 +25,10 @@ def select_daily_photo() -> Path:
 
 
 def main() -> None:
+    if has_posted_today(SHOPEE_URL):
+        print("今日已有自動貼文，略過本次備援發文。")
+        return
+
     photo_path = select_daily_photo()
     article = generate_article().rstrip()
     message = f"{article}\n\n🛒 蝦皮賣場：{SHOPEE_URL}"

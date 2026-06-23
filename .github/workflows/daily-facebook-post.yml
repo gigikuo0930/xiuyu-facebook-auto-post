@@ -5,7 +5,13 @@ on:
     # GitHub Actions 使用 UTC；02:17 UTC = 台灣時間 10:17。
     # 避開整點的排程尖峰，降低 GitHub 延遲觸發的機率。
     - cron: "17 2 * * *"
+    # 台灣時間 15:47 再檢查一次；當天未發文時才會補發。
+    - cron: "47 7 * * *"
   workflow_dispatch:
+
+concurrency:
+  group: daily-facebook-post
+  cancel-in-progress: false
 
 jobs:
   post:
