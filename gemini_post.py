@@ -18,7 +18,7 @@ TOPICS = [
     "天然玉石每件紋理不同的特色",
 ]
 
-def generate_article(max_attempts: int = 3) -> str:
+def generate_article(max_attempts: int = 5) -> str:
     topic = random.choice(TOPICS)
 
     prompt = f"""
@@ -43,13 +43,17 @@ def generate_article(max_attempts: int = 3) -> str:
                 contents=prompt,
             )
             return response.text.strip()
-        except errors.ServerError:
-            if attempt == max_attempts:
+        except errors.APIError as error:
+            status_code = getattr(error, "code", None)
+            retryable = isinstance(error, errors.ServerError) or status_code in {408, 429}
+
+            if not retryable or attempt == max_attempts:
                 raise
 
-            wait_seconds = 30 * attempt
+            wait_seconds = min(30 * (2 ** (attempt - 1)), 120)
             print(
-                f"Gemini 服務暫時忙碌，{wait_seconds} 秒後自動重試 "
+                f"Gemini 暫時無法回應（HTTP {status_code or '未知'}），"
+                f"{wait_seconds} 秒後自動重試 "
                 f"({attempt}/{max_attempts})..."
             )
             time.sleep(wait_seconds)

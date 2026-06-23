@@ -2,14 +2,15 @@ name: 每日 Facebook 自動發文
 
 on:
   schedule:
-    # GitHub Actions 使用 UTC；02:00 UTC = 台灣時間 10:00。
-    - cron: "0 2 * * *"
+    # GitHub Actions 使用 UTC；02:17 UTC = 台灣時間 10:17。
+    # 避開整點的排程尖峰，降低 GitHub 延遲觸發的機率。
+    - cron: "17 2 * * *"
   workflow_dispatch:
 
 jobs:
   post:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: 取得專案
